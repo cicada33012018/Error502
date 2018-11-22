@@ -57,16 +57,21 @@ namespace WindowsFormsApplication1
            
             string[] files = Directory.GetFiles(selectedFolderPath, "*.java", SearchOption.AllDirectories);
            f = new List<FileDetail>();
-            
+
+            DataTable dt = new DataTable();
+            dt.Columns.Add("Name");
+            dt.Columns.Add("Directory");
+
+
             foreach (var file in files)
             {
                 FileInfo info = new FileInfo(file);
-                f.Add(new FileDetail(info.Name,info.DirectoryName));
-                    
-               listBox1.Items.Add(info.Name);
-              
+                DataRow dr = dt.NewRow();
+                dr[0] = ""+info.Name;
+                dr[1] = ""+info.DirectoryName;
+                dt.Rows.Add(dr);
             }
-
+            dataGridView1.DataSource = dt;
             return f;
         }
 
@@ -84,10 +89,14 @@ namespace WindowsFormsApplication1
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            zee = listBox1.SelectedItem.ToString();
-            string ponka = listBox1.SelectedIndex.ToString();
-            MessageBox.Show(ponka +" : " + zee + Files[0].ToString() + "   " + Files[1].ToString());
-            
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            var FileName = dataGridView1.SelectedCells[0].Value;
+            var FileDirectory = dataGridView1.SelectedCells[1].Value;
+            string FilePath = FileDirectory + "/" + FileName;
+            MessageBox.Show(FilePath);
         }
     }
 }

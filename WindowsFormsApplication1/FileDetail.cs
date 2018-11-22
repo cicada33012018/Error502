@@ -10,10 +10,29 @@ namespace WindowsFormsApplication1
     {
         string fileName;
         string fileDirectory;
+
+        private static int index;
+        private static int[] ItemNo ;
+
+        public static int Index
+        {
+            get
+            {
+                return index;
+            }
+
+            set
+            {
+                index = value;
+            }
+        }
+
         public FileDetail(string fileName,string fileDirectory)
         {
             this.fileName = fileName;
             this.fileDirectory = fileDirectory;
+            index++;
         }
+       
     }
 }
