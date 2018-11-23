@@ -53,7 +53,157 @@ namespace WindowsFormsApplication1
 
         }
 
-        
+        public Tuple<int, int, int, int, int, int, int> CalculateLOC(string Path)
+        {
+            //Initializing Variables
+            int counter = 0;
+            int counter2 = 0;
+            int counter3 = 0;
+            int counter4 = 0;
+            int counter5 = 0;
+
+            //    string filePath = @"C:\Users\Zeeshan\Desktop\junit4-master\junit4-master\src\test\java\junit\samples\asdf.java";
+
+            //Reading The Code Line by line
+            string line;
+            StreamReader file = new StreamReader(@"" + Path);
+
+            while ((line = file.ReadLine()) != null)
+            {
+                counter++;
+
+                //For White Spaces
+                if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line))
+                {
+                    counter4++;
+                }
+
+                //For Single Line Comment
+                if (line.Contains("//"))
+                {
+                    counter2++;
+                }
+
+                /// For Block Lines of Comments
+                if (line.Contains("/*") || line.Contains("*/"))
+                {
+                    counter5++;
+                }
+                if (line.Contains("/*"))
+                {
+                    do
+                    {
+                        counter3++;
+                        line = file.ReadLine();
+                        if (string.IsNullOrEmpty(line) || string.IsNullOrWhiteSpace(line))
+                        {
+                            counter4++;
+                        }
+
+                    } while (!line.Contains("*/"));
+                    continue;
+                }
+            }
+            file.Close();
+
+            ////////////FOR NCLOC  and SLOC//////////////////////
+
+            int c1 = 0;
+            int c2 = 0;
+            int c3 = 0;
+            int c4 = 0;
+            int c5 = 0;
+            int c6 = 0;
+            int c7 = 0;
+            int c8 = 0;
+
+            string line2;
+            StreamReader file2 = new StreamReader(Path);
+            while ((line2 = file2.ReadLine()) != null)
+            {
+                c2++;
+
+                //For headers and White Spaces
+                if (line2.Contains("package") || line2.Contains("import") || string.IsNullOrWhiteSpace(line2))
+                {
+                    c1++;
+                }
+
+                //For Counting Block comments signature
+                if (line2.Contains("/*") || line2.Contains("*/"))
+                {
+                    c3++;
+                }
+
+                //For Counting Single Line Comments Signatures
+                if (line2.Contains("//") && !line2.Contains(";"))
+                {
+                    c5++;
+                }
+
+                //For Counting Only Single Brackets in line
+                if ((line2.Contains("{") || line2.Contains("}")) && (!line2.Contains(";")))
+                {
+                    c6++;
+                }
+
+
+                if (line2.Contains("/*"))
+                {
+                    do
+                    {
+                        c2++;
+                        line2 = file2.ReadLine();
+                        c3++;
+                        c4++;
+                        if (string.IsNullOrWhiteSpace(line2))
+                        {
+                            c3++;
+                        }
+
+                    } while (!line2.Contains("*/"));
+                    continue;
+                }
+
+
+                if ((line2.Contains("void") || line2.Contains("@") ||
+                 line2.Contains("class") || line2.Contains("extends") || line2.Contains("()") || line2.Contains("int")
+               || line2.Contains("string") || line2.Contains("double") || line2.Contains("boolean")
+               ) && !line2.Contains(";"))
+                {
+                    c7++;
+                }
+
+                if (line2.Contains(";"))
+                {
+                    c8++;
+                }
+
+
+            }
+            file2.Close();
+
+            /// Summing up values
+            int BLOC = counter4;
+            int LOC = (counter + counter3);
+            int SLOC_Com = (counter2);
+            int BLOC_Com = (counter3 + counter5);
+            int SLOC = (c2 - c1 - c3);
+            int NCLOC = ((c7 + c8));
+            int CLOC = SLOC_Com + BLOC_Com;
+
+            MessageBox.Show("Blank loc : " + BLOC);
+            MessageBox.Show("Lines : " + LOC);
+            MessageBox.Show("single Lines of comment : " + SLOC_Com);
+            MessageBox.Show("Block Line of Comment : " + BLOC_Com);
+            MessageBox.Show("SLOC :  " + SLOC);
+            MessageBox.Show("NCLOC  : " + NCLOC);
+
+            return Tuple.Create(LOC, CLOC, SLOC_Com, BLOC_Com, SLOC, NCLOC, BLOC);
+        }
+
+
+
 
         private List<FileDetail> getFiles(string selectedFolderPath)
         {
@@ -269,6 +419,8 @@ namespace WindowsFormsApplication1
             label17.Text = "" + H_Matrix2.Item3.ToString("#####.##");
             label18.Text = "" + H_Matrix2.Item4;
             label19.Text = "" + H_Matrix2.Item5.ToString("#####.##");
+
+            CalculateLOC(FilePath);
 
 
         }
