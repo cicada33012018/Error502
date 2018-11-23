@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Ookii.Dialogs.WinForms;
 using System.IO;
 using System.Threading;
 
@@ -30,6 +29,8 @@ namespace WindowsFormsApplication1
             Files = new List<FileDetail>();
             button2.Visible = false;
             dataGridView1.Visible = false;
+
+
 
         }
 
@@ -93,33 +94,171 @@ namespace WindowsFormsApplication1
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
         }
-        private static int CalculateComplexity(string Path)
+        private static Tuple<string[],int[],int> CalculateComplexity(string Path)
         {
             string line;
-            int complexity = 0;
+            int numberOfMethod=0;
+            int[] MethodComplexity = new int[999];
+            string[] MethodName = new string[999];
+            Boolean lineIsMethod = false;
+            int methodCounter = 0;
             System.IO.StreamReader str = new System.IO.StreamReader(@"" + Path);
             while ((line = str.ReadLine()) != null)
             {
-                if (line.Contains("void") || line.Contains("int") || line.Contains("float") || line.Contains("string") || line.Contains("char") && line.Contains("("))
-                { complexity++; }
-                if (line.Contains("if") || line.Contains("else") || line.Contains("case") || line.Contains("default"))
-                    complexity++;
-                if (line.Contains("for") || line.Contains("while") || line.Contains(" do ") || line.Contains("break") || line.Contains("continue"))
-                    complexity++;
-                if (line.Contains("&&") || line.Contains("||") || line.Contains("?"))
-                    complexity++;
-                if (line.Contains("catch") || line.Contains("finally") || line.Contains("throw") || line.Contains("throws"))
-                    complexity++;
-            }
-            return complexity;
+                if (string.IsNullOrEmpty(line))
+                    continue;
+
+
+
+                if (line.Contains("void")   && line.Contains("(") && line.Contains(")") && !line.Contains("=") ||
+                    line.Contains("int")    && line.Contains("(") && line.Contains(")") && !line.Contains("=") || 
+                    line.Contains("float")  && line.Contains("(") && line.Contains(")") && !line.Contains("=") ||
+                    line.Contains("string") && line.Contains("(") && line.Contains(")") && !line.Contains("=") || 
+                    line.Contains("char") && line.Contains("(") && line.Contains(")") && !line.Contains("="))
+                   {
+                    numberOfMethod++;
+                    lineIsMethod = true;
+                    methodCounter++;
+                    if (line.Contains("protected"))
+                    line= line.Replace("protected", "");
+
+                    if (line.Contains("public"))
+                        line = line.Replace("public", "");
+
+                    if (line.Contains("private"))
+                        line = line.Replace("private", "");
+
+                    if (line.Contains("static"))
+                        line = line.Replace("static", "");
+
+                    if (line.Contains("final"))
+                        line = line.Replace("final", "");
+
+                    if (line.Contains("protected"))
+                        line = line.Replace("protected", "");
+
+                    MethodComplexity[methodCounter]++;
+
+                    if (line.Contains("void"))
+                    {
+                        line = line.Replace("void", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+                    if (line.Contains("int"))
+                    {
+                        line = line.Replace("int", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+                    if (line.Contains("float"))
+                    {
+                        line = line.Replace("float", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+                    if (line.Contains("char"))
+                    {
+                        line = line.Replace("char", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+                    if (line.Contains("string"))
+                    {
+                        line = line.Replace("string", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+                    if (line.Contains("String"))
+                    {
+                        line = line.Replace("String", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+                    if (line.Contains("Boolean"))
+                    {
+                        line = line.Replace("Boolean", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+                    if (line.Contains("boolean"))
+                    {
+                        line = line.Replace("boolean", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+                    if (line.Contains("List<>"))
+                    {
+                        line = line.Replace("List<>", "");
+                        var x = line.Split('(');
+                        MethodName[methodCounter] = x[0];
+                    }
+
+
+                }
+                if (lineIsMethod)
+                {
+
+                    if (line.Contains("if") || line.Contains("else") || line.Contains("case") || line.Contains("default"))
+                    {
+                        MethodComplexity[methodCounter]++;
+                    }
+                    if (line.Contains("for") || line.Contains("while") || line.Contains(" do ") || line.Contains("break") || line.Contains("continue"))
+                    {
+                        MethodComplexity[methodCounter]++;
+                    }
+                    if (line.Contains("&&") || line.Contains("||") || line.Contains("?"))
+                    {
+                        MethodComplexity[methodCounter]++;
+                    }
+                    if (line.Contains("catch") || line.Contains("finally") || line.Contains("throw") || line.Contains("throws"))
+                    {
+                        MethodComplexity[methodCounter]++;
+                    }
+                }
+}
+            return Tuple.Create(MethodName,MethodComplexity, numberOfMethod);
         }
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+
             var FileName = dataGridView1.SelectedCells[0].Value;
             var FileDirectory = dataGridView1.SelectedCells[1].Value;
             string FilePath = FileDirectory + "/" + FileName;
-          label28.Text= ""+ CalculateComplexity(FilePath);
-             H_Matrix1 = CalculateHalstead1(FilePath);
+            int z = 0;
+            Tuple<string[],int[],int> tpl= CalculateComplexity(FilePath);
+
+            DataTable dt = new DataTable();
+
+            dt.Columns.Add("Methods");
+            dt.Columns.Add("Complexity");
+
+            for (int i = 1; i < tpl.Item1.Length; i++)
+            {
+                DataRow dr = dt.NewRow();
+                dr[0] = tpl.Item1[i];
+                if(tpl.Item2[i]>0)
+                dr[1] = tpl.Item2[i];
+                dt.Rows.Add(dr);
+
+            }
+            label23.Text = tpl.Item3.ToString() ;
+            
+            dataGridView2.DataSource = dt;
+
+            dataGridView2.Columns[0].Width = 170;// The id column 
+            dataGridView2.Columns[1].Width = 70;
+            //label28.Text= CalculateComplexity(FilePath).Item1[0]+" = " + CalculateComplexity(FilePath).Item2[0];
+
+
+
+
+            H_Matrix1 = CalculateHalstead1(FilePath);
              H_Matrix2 = CalculateHalstead2(H_Matrix1.Item1, H_Matrix1.Item2, H_Matrix1.Item3, H_Matrix1.Item4);
             label11.Text = ""+H_Matrix1.Item3;
             label12.Text = "" + H_Matrix1.Item1;
@@ -330,9 +469,6 @@ namespace WindowsFormsApplication1
                 }
             }
 
-         //   MessageBox.Show("Operand:" + Operand);
-          //  MessageBox.Show("N2:" + n2);
-          //  MessageBox.Show("N1:" + n1);
 
 
             return Tuple.Create(Operater,n1,Operand,n2 );
@@ -344,6 +480,16 @@ namespace WindowsFormsApplication1
         }
 
         private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView2_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void label23_Click(object sender, EventArgs e)
         {
 
         }
